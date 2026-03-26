@@ -512,3 +512,67 @@ ORDER BY a.actor_id ;
 	Join type: I used an INNER JOIN because it directly connects all the way through the tables
 	Pros and cons: The subquery solution has a bigger cost that others but the difference is smaller(270 vs 240). 
 The query is pretty simple so there is in no sence in creating structures like CTE or Subquery*/
+
+
+/*Part 3.2 Join
+Task: The stores’ marketing team wants to analyze actors' inactivity periods to select those with notable career breaks 
+for targeted promotional campaigns, highlighting their comebacks or consistent appearances to engage customers with 
+nostalgic or reliable film stars
+*/
+SELECT 
+    a.first_name, 
+    a.last_name,
+    (EXTRACT(YEAR FROM CURRENT_DATE) - MIN(f.release_year)) - COUNT(DISTINCT f.release_year) AS total_inactivity_years
+FROM actor a
+JOIN film_actor fa ON a.actor_id = fa.actor_id
+JOIN film f ON fa.film_id = f.film_id
+GROUP BY a.actor_id, a.first_name, a.last_name
+ORDER BY total_inactivity_years DESC;
+
+
+/*Part 3.2 Subquery
+Task: The stores’ marketing team wants to analyze actors' inactivity periods to select those with notable career breaks 
+for targeted promotional campaigns, highlighting their comebacks or consistent appearances to engage customers with 
+nostalgic or reliable film stars
+*/
+SELECT 
+    a.first_name, 
+    a.last_name,
+    (
+        SELECT (EXTRACT(YEAR FROM CURRENT_DATE) - MIN(f.release_year)) - COUNT(DISTINCT f.release_year)
+        FROM film_actor fa
+        JOIN film f ON fa.film_id = f.film_id
+        WHERE fa.actor_id = a.actor_id
+    ) AS total_inactivity_years
+FROM actor a
+ORDER BY total_inactivity_years DESC;
+
+/*Part 3.2 CTE
+Task: The stores’ marketing team wants to analyze actors' inactivity periods to select those with notable career breaks 
+for targeted promotional campaigns, highlighting their comebacks or consistent appearances to engage customers with 
+nostalgic or reliable film stars
+*/
+WITH actor_career_stats AS (
+    SELECT 
+        a.actor_id,
+        a.first_name, 
+        a.last_name,
+        (EXTRACT(YEAR FROM CURRENT_DATE) - MIN(f.release_year)) AS career_span,
+        COUNT(DISTINCT f.release_year) AS active_years
+    FROM actor a
+    JOIN film_actor fa ON a.actor_id = fa.actor_id
+    JOIN film f ON fa.film_id = f.film_id
+    GROUP BY a.actor_id, a.first_name, a.last_name
+)
+SELECT first_name, last_name, (career_span - active_years) AS total_inactivity_years
+FROM actor_career_stats
+ORDER BY total_inactivity_years DESC;
+
+/*Summary: gaps between sequential films per each actor
+	Task's logic: As the aim is to calculate gaps between sequential films per each actor, we can create a formula 
+that will simplify query. So if we have to count the years of inactivity we can do it this way: 
+current_year - first_film_release_year - count(distinct_release_years)
+	Join type: I used an INNER JOIN because it directly connects all the way through the tables
+	Pros and cons: The cost difference between the CTE and join query VS subquery is huge (630 against 21330). So subquery 
+is not the best choice. If we compare the join and the CTE, the join`s logical complexity is simpler but the CTE logic is 
+easier to understand. Also it can be reused for general actor metrics, so in my oppinion it is better for production*/
