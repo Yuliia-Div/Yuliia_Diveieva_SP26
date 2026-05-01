@@ -77,13 +77,13 @@ CREATE TABLE IF NOT EXISTS inventory.booking(
 	CONSTRAINT check_out_date CHECK (check_out_date > check_in_date)
 );
 
-CREATE TYPE payment_methods AS ENUM ('cash', 'card');
+CREATE TYPE inventory.payment_methods AS ENUM ('cash', 'card');
 
 CREATE TABLE IF NOT EXISTS inventory.payment(
 	payment_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	booking_id INT NOT NULL REFERENCES inventory.booking(booking_id) ON DELETE RESTRICT,
 	amount DECIMAL(10,2) NOT NULL CHECK (amount >= 0),
-	payment_method payment_methods NOT NULL,
+	payment_method inventory.payment_methods NOT NULL,
 	payment_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP CHECK (payment_date > '2000-01-01')
 );
 
