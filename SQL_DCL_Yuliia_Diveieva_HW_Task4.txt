@@ -1,0 +1,16 @@
+Task 4
+1. Access to the needed columns can be directly given to the user by Grant query:
+GRANT SELECT (rental_id, rental_date, return_date, staff_id) 
+ON TABLE public.rental 
+TO user_name;
+
+But it is better to create a separate view to avoid errors because of the attempts to select (or any other action) columns to which a user doesn't have access.
+Example: A company wants to allow their data analysts to run statistics on sales patterns but needs to hide personal information like home addresses or credit cards (in real life)
+
+2. The identification purpose is to identify the user for the system to understand who that is. Authentication is verification of that.
+Real scenario: In a physical rental store identification is telling the seller your phone, while authentication is the clerk asking for a code from the message, that was sent to you.
+In the DB the authentication and identification processes happen when you enter your login and password to connect.
+
+3.  Scram-sha-256 is the recommended one that prevents password sniffing on untrusted connections and supports storing passwords on the server in a cryptographically hashed form that is thought to be secure. 
+
+4. Proxy authentication is an application server that connects to the database as itself and then switches to a more restricted role. It is better because it doesn't create a separate connection for each user (as it would be done without proxy authentication). Instead it sets the role to the free connection when the user needs to connect and resets the role at the end of a session. Also it helps to track changes as it can log user activity.
