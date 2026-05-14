@@ -26,7 +26,7 @@ WHERE s.time_id BETWEEN '1998-01-01'::DATE AND '2001-12-31'::DATE
 GROUP BY cou.country_region, EXTRACT('year' FROM s.time_id), ch.channel_desc
 ),
 prepared_q AS (
-	SELECT country_region, "year", channel_desc, amount_sold,  "%_by_channels" || ' %',
+	SELECT country_region, "year", channel_desc, amount_sold,  "%_by_channels" || ' %' AS "%_by_channels",
 		LAG("%_by_channels") OVER (PARTITION BY country_region, channel_desc ORDER BY "year") || ' %' AS "%_previous_period",
 	    ("%_by_channels" - LAG("%_by_channels") OVER (PARTITION BY country_region, channel_desc ORDER BY "year")) || ' %' AS "%_diff"
 	FROM chan_percents
@@ -34,7 +34,9 @@ prepared_q AS (
 )
 SELECT *
 FROM prepared_q
-WHERE "year" > 1998;
+WHERE "year" = 2001 
+	OR "year" = 2000
+	OR "year" = 1999;
 --I had to add the prepared_q CTE and filter years separately, as in another way there appeared NULL values in the 
 --"%_previous_period" and "%_diff" columns
 
